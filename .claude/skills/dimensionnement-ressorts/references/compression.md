@@ -49,6 +49,10 @@ sK = L0 · 0,5/(1 − G/E) · [1 − √(1 − (1 − G/E)/(0,5 + G/E) · (π·D
 | Articulé – articulé | 1 |
 | Encastré – libre | 2 |
 
+ν décrit la tenue des plateaux, pas le meulage. Mais des extrémités non meulées (appui sur le fil rond) encastrent mal.
+Avec `rapprochees` ou `libres` et ν = 0,5, le calculateur conseille donc de refaire le calcul avec ν = 0,7.
+C'est un jugement d'ingénieur, non sourcé.
+
 Si la racine est imaginaire, le ressort est stable.
 Shigley : stabilité absolue si L0 < 2,63·D/α, soit L0/D < 5,26 pour α = 0,5 [S8].
 Sinon, guider le ressort sur une tige ou dans un alésage, ou réduire L0/D.

@@ -23,6 +23,19 @@ F0 dépend de l'indice et ne peut pas être augmentée à volonté [S2]. Il vaut
     τB = KB·8·F·D/(π·d³) avec KB = (4C2 − 1)/(4C2 − 4) ; limite **0,40·Sut**.
   - Axomek, qui calcule selon EN, retient 0,7·Rm en flexion et 0,45·Rm en torsion [S9].
 
+## Types d'extrémités (`--extremites`)
+| Extrémité | Spires actives | Contraintes calculées | Source |
+|---|---|---|---|
+| `crochet` (par défaut) : anneau ou crochet formé dans le fil (allemand, anglais, crochet…) | na = n_corps + G/E | corps + crochet (σA flexion, τB torsion au pliage) | Shigley [S8] |
+| `embout` : embout vissé dans les spires, avec un œil | **na = n_total − spires vissées côté 1 − côté 2** | corps seulement | Usage recommandé en dynamique : Gutekunst [S2]. Calcul de na : **raisonnement mécanique non sourcé** |
+
+Embout vissé :
+- Les spires engagées sur le filet ne travaillent plus. La raideur augmente donc d'un facteur n_total/na. Exemple : 20 spires dont 3 vissées de chaque côté donnent 14 spires actives, soit une raideur × 1,43.
+- Il n'y a pas de pliage, donc pas de σA ni de τB. Le point critique devient la **dernière spire en prise** sur le filet (concentration d'effort, non calculée). La tenue de l'embout et de son œil relève du fabricant de l'embout.
+- Le nombre de spires en prise est une donnée du fabricant. Valider la raideur par une mesure sur prototype.
+
+Exemple : `python3 ressort.py traction --d 1.5 --D 12 --n 20 --F 40 --extremites embout --spires-vissees 3` (ou `--spires-vissees 3 2` si les deux côtés diffèrent).
+
 ## Fatigue
 Il n'existe pas de valeurs d'endurance générales, à cause des surcontraintes aux pliages des anneaux.
 Les ressorts de traction ne peuvent pas être grenaillés (spires jointives).

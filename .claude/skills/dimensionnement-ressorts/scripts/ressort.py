@@ -203,6 +203,10 @@ def calc_compression(d, D, n, L0, extremites="rapprochees_meulees", materiau="DH
         res["s_flambage"] = sk
         res["flambage"] = f"flèche critique sk = {sk:.2f} mm (L = {L0 - sk:.2f} mm)"
     res["elancement_L0_sur_D"] = L0 / D
+    if extremites in ("rapprochees", "libres") and appuis == "encastre":
+        # Jugement d'ingénieur, non sourcé : une extrémité non meulée encastre mal.
+        alertes.append("Extrémités non meulées (appui sur le fil rond) avec ν = 0,5 : hypothèse optimiste "
+                       "pour le flambage, refaire le calcul avec --appuis encastre_rotule (ν = 0,7).")
     for i, F in ((1, F1), (2, F2)):
         if F is None:
             continue
@@ -269,13 +273,25 @@ def concevoir_compression(F1, L1, F2, L2, materiau="DH", De_max=None, Di_min=Non
 
 
 # ---------------------------------------------------------------- traction
-def calc_traction(d, D, n, materiau="DH", F0=None, F=None, r1=None, r2=None, L0=None, Rm_impose=None):
+def calc_traction(d, D, n, materiau="DH", F0=None, F=None, r1=None, r2=None, L0=None, Rm_impose=None,
+                  extremites="crochet", spires_vissees=(0.0, 0.0)):
+    """extremites : "crochet" (anneaux/crochets formés dans le fil) ou "embout" (embouts vissés).
+    Pour "embout", n = spires totales du corps et spires_vissees = spires en prise de chaque côté."""
     mat = MATERIAUX[materiau]
     alertes = []
     C = D / d
     verifier_C(C, alertes)
     G, E = mat["G"], mat["E"]
-    na = n + G / E                        # Shigley éq. 10-39 : spires actives = corps + G/E
+    if extremites == "embout":
+        # Hypothèse NON SOURCÉE (raisonnement mécanique) : les spires vissées sur l'embout ne
+        # travaillent plus ; pas de correction G/E car il n'y a pas de crochet qui fléchit.
+        na = n - sum(spires_vissees)
+        if na < 2:
+            raise SystemExit("Embouts : moins de 2 spires actives restantes.")
+        alertes.append(f"Embouts vissés : na = {n} − {sum(spires_vissees)} = {na} spires actives "
+                       "(hypothèse non sourcée, à confirmer par une mesure de raideur sur prototype).")
+    else:
+        na = n + G / E                    # Shigley éq. 10-39 : spires actives = corps + G/E
     R = G * d ** 4 / (8 * D ** 3 * na)
     Rm = rm(materiau, d, alertes, Rm_impose)
     # Shigley éq. 10-41 (en MPa) : plage préférée de contrainte initiale non corrigée
@@ -284,13 +300,16 @@ def calc_traction(d, D, n, materiau="DH", F0=None, F=None, r1=None, r2=None, L0=
     ti_min, ti_max = base - ecart, base + ecart
     Fi = lambda t: t * math.pi * d ** 3 / (8 * D)
     Di = D - d
-    res = dict(type="traction", materiau=mat["nom"], d=d, D=D, De=D + d, Di=Di, C=C, n_corps=n, na=na,
-               R=R, Rm_min=Rm, tau_i_min=ti_min, tau_i_max=ti_max, F0_min=Fi(ti_min), F0_max=Fi(ti_max),
-               L_corps=(n + 1) * d,
-               hauteur_anneau=dict(demi_allemand=(0.55 * Di, 0.80 * Di), allemand=(0.80 * Di, 1.10 * Di),
-                                   anglais=1.10 * Di),
-               adm=dict(corps_EN=0.45 * Rm, crochet_flexion_Shigley=0.75 * Rm,
-                        crochet_torsion_Shigley=0.40 * Rm))
+    res = dict(type="traction", extremites=extremites, materiau=mat["nom"], d=d, D=D, De=D + d, Di=Di, C=C,
+               n_corps=n, na=na, R=R, Rm_min=Rm, tau_i_min=ti_min, tau_i_max=ti_max,
+               F0_min=Fi(ti_min), F0_max=Fi(ti_max), L_corps=(n + 1) * d,
+               adm=dict(corps_EN=0.45 * Rm))
+    if extremites == "embout":
+        res["spires_vissees"] = list(spires_vissees)
+    else:
+        res["hauteur_anneau"] = dict(demi_allemand=(0.55 * Di, 0.80 * Di), allemand=(0.80 * Di, 1.10 * Di),
+                                     anglais=1.10 * Di)
+        res["adm"].update(crochet_flexion_Shigley=0.75 * Rm, crochet_torsion_Shigley=0.40 * Rm)
     if F0 is not None and not Fi(ti_min) <= F0 <= Fi(ti_max):
         alertes.append(f"F0 = {F0} N hors plage préférée [{Fi(ti_min):.1f} ; {Fi(ti_max):.1f}] N (Shigley).")
     if F is not None:
@@ -306,6 +325,11 @@ def calc_traction(d, D, n, materiau="DH", F0=None, F=None, r1=None, r2=None, L0=
         res["s_max_conseille"] = 0.8 * sn
         if s > 0.8 * sn:
             alertes.append(f"Flèche {s:.1f} mm > 0,8·sn = {0.8 * sn:.1f} mm (risque de relaxation, Gutekunst).")
+        if extremites == "embout":
+            alertes.append("Embouts : pas de contrainte de crochet. Point critique = dernière spire en prise "
+                           "sur le filet (non calculé) ; la tenue de l'embout et de son œil relève du fabricant.")
+            res["alertes"] = alertes
+            return res
         # Crochet usuel : r1 ≈ D/2, r2 = rayon de pliage (défaut 2d)
         r1 = r1 or D / 2
         r2 = r2 or 2 * d
@@ -319,7 +343,8 @@ def calc_traction(d, D, n, materiau="DH", F0=None, F=None, r1=None, r2=None, L0=
             alertes.append(f"Flexion au crochet {sA:.0f} MPa > 0,75·Rm.")
         if tB > res["adm"]["crochet_torsion_Shigley"]:
             alertes.append(f"Torsion au rayon de pliage {tB:.0f} MPa > 0,40·Rm (augmenter r2).")
-    alertes.append("Traction en dynamique : pas de méthode générale fiable (crochets), essai d'endurance recommandé.")
+    alertes.append("Traction en dynamique : pas de méthode générale fiable (crochets). Préférer des embouts "
+                   "roulés ou vissés et faire un essai d'endurance (Gutekunst).")
     res["alertes"] = alertes
     return res
 
@@ -446,7 +471,11 @@ def main(argv=None):
     t = sub.add_parser("traction")
     t.add_argument("--d", type=float, required=True)
     t.add_argument("--D", type=float, required=True)
-    t.add_argument("--n", type=float, required=True, help="spires du corps")
+    t.add_argument("--n", type=float, required=True, help="spires du corps (totales si embouts)")
+    t.add_argument("--extremites", choices=["crochet", "embout"], default="crochet",
+                   help="crochet/anneau formé dans le fil, ou embout vissé")
+    t.add_argument("--spires-vissees", type=float, nargs="+", default=[0.0],
+                   help="embout : spires en prise, une valeur (identique des 2 côtés) ou deux")
     t.add_argument("--F0", type=float, help="tension initiale (N)")
     t.add_argument("--F", type=float, help="effort de service (N)")
     t.add_argument("--L0", type=float, help="longueur libre entre crochets (mm)")
@@ -481,7 +510,11 @@ def main(argv=None):
         res = concevoir_compression(a.F1, a.L1, a.F2, a.L2, a.materiau, a.De_max, a.Di_min,
                                     a.extremites, a.C, a.tau_adm, a.appuis, a.fatigue)
     elif a.cmd == "traction":
-        res = calc_traction(a.d, a.D, a.n, a.materiau, a.F0, a.F, a.r1, a.r2, a.L0, a.Rm)
+        sv = a.spires_vissees * 2 if len(a.spires_vissees) == 1 else a.spires_vissees[:2]
+        if a.extremites == "embout" and not any(sv):
+            raise SystemExit("--extremites embout : préciser --spires-vissees.")
+        res = calc_traction(a.d, a.D, a.n, a.materiau, a.F0, a.F, a.r1, a.r2, a.L0, a.Rm,
+                            a.extremites, tuple(sv))
     else:
         res = calc_torsion(a.d, a.D, a.n, a.materiau, a.M, a.M1, a.l1, a.l2, a.axe,
                            a.cycles, a.grenaille, a.Rm)

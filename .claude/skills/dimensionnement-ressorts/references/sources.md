@@ -30,4 +30,6 @@ Les copies non autorisées de normes (Scribd, etc.) ont été écartées.
 - Rm du CuSn6 : loi Shigley (ASTM B159) ; EN 12166 désigne CuSn6 R950.
 - Températures maximales de FDC et FDSiCr ; Rm du 1.4310 au-delà de d = 4,25 mm.
 - Correspondance des nuances EN ↔ ASTM pour la fatigue en torsion (DH ≈ A228, fils trempés à l'huile ≈ A230/A232).
+- Traction avec embouts vissés : na = n_total − spires vissées (raisonnement mécanique ; seul l'usage en dynamique est sourcé chez Gutekunst, https://blog.federnshop.com/en/eyelet-shapes-extension-springs/).
+- Compression non meulée : conseil de calculer le flambage avec ν = 0,7 (jugement d'ingénieur).
 - Tolérances : DIN 2097 (traction) et DIN 2194 (torsion) sont citées par Gutekunst, mais leur statut actuel n'a pas été vérifié.

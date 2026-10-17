@@ -43,7 +43,8 @@ Outil :
 S=.claude/skills/dimensionnement-ressorts/scripts/ressort.py
 python3 $S concevoir-compression --F1 20 --L1 40 --F2 60 --L2 30 --De-max 20 --materiau DH
 python3 $S compression --d 1.6 --D 12.8 --n 8 --L0 45 --F1 20 --F2 60 --fatigue [--grenaille] [--Rm 2150]
-python3 $S traction --d 1.5 --D 12 --n 20 --F0 10 --F 40 --L0 60
+python3 $S traction --d 1.5 --D 12 --n 20 --F0 10 --F 40 --L0 60                  # crochets formés
+python3 $S traction --d 1.5 --D 12 --n 20 --F 40 --extremites embout --spires-vissees 3   # embouts vissés
 python3 $S torsion --d 2 --D 16 --n 6 --M 800 --M1 200 --l1 20 --l2 20 --axe 12   # --M1 : fatigue
 python3 $S materiaux          # ajouter --json avant la sous-commande pour une sortie machine
 ```

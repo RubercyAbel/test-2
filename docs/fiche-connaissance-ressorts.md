@@ -61,6 +61,8 @@ Domaine EN 13906-1 pour l'enroulement à froid : d ≤ 20 mm, n ≥ 2, 4 ≤ w =
 - Tension initiale réalisable (Shigley) : τi = 231·e^(−0,105·C) ± 6,9·(4 − (C − 3)/6,5) MPa [S8].
 - Crochets (Shigley) : flexion σA ≤ 0,75·Sut, torsion au pliage τB ≤ 0,40·Sut [S8].
 - Pas de grenaillage possible (spires jointives). En dynamique, préférer des embouts roulés ou vissés et faire un essai [S2].
+- **Embout vissé** : les spires en prise ne travaillent plus, donc na = n_total − spires vissées des deux côtés, et la raideur augmente. Il n'y a plus de contrainte de crochet ; le point critique est la dernière spire en prise. Ce décompte est un raisonnement mécanique, non sourcé : à valider par une mesure de raideur.
+- Compression avec extrémités non meulées (appui sur le fil rond) : Lc plus long de 1,5·d, et flambage à calculer prudemment avec ν = 0,7 plutôt que 0,5 (jugement d'ingénieur).
 
 ### 3.3 Torsion (EN 13906-3)
 - **RM = E·d⁴/(3667·D·n)** en N·mm/° [S2]. Shigley ajoute les branches : na = n + (l1 + l2)/(3·π·D) [S8].
