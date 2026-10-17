@@ -15,9 +15,14 @@ Poser les questions manquantes, mais ne pas bloquer : proposer des hypothèses p
 - **Encombrement** : alésage maxi, tige ou axe de guidage, longueur disponible à vide et en position comprimée.
 - **Sollicitation** : statique (< 10⁴ cycles) ou dynamique (nombre de cycles, fréquence).
 - **Environnement** : température, corrosion, magnétisme, conductivité, choc.
-- **Contraintes industrielles** : quantité, coût, tolérances visées (EN 15800 classe 1/2/3), ressort catalogue acceptable ou non.
+- **Contraintes industrielles** : quantité, coût, tolérances visées, ressort catalogue acceptable ou non.
+  Normes de tolérance : EN 15800 classes 1/2/3 pour la compression ; DIN 2097 pour la traction et DIN 2194 pour la torsion (citées par Gutekunst).
 
-Hypothèses par défaut : fil DH EN 10270-1, extrémités rapprochées meulées, appuis plans parallèles (ν = 0,5), tolérances EN 15800 classe 2, τadm = 0,45·Rm.
+Hypothèses par défaut : fil DH EN 10270-1 avec **Rm minimale du tableau EN**, extrémités rapprochées meulées, appuis plans parallèles (ν = 0,5), tolérances EN 15800 classe 2.
+Limites admissibles EN 13906 : τ ≤ 0,5·Rm (compression), τc ≤ 0,56·Rm à bloc, τ ≤ 0,45·Rm (traction), σq ≤ 0,7·Rm (torsion).
+
+Domaine couvert : ressorts **enroulés à froid** en fil rond (EN 13906-1 : d ≤ 20 mm, n ≥ 2, 4 ≤ D/d ≤ 20). Les ressorts enroulés à chaud ne sont pas traités par le calculateur.
+Chaque formule des références porte un repère [S#] vers `references/sources.md`. Citer ces sources quand l'utilisateur demande d'où vient un résultat.
 
 ## 2. Choisir le type et le matériau
 - Compression : le plus robuste, il reste porteur même cassé. Le préférer par défaut.
@@ -37,11 +42,14 @@ Outil :
 ```bash
 S=.claude/skills/dimensionnement-ressorts/scripts/ressort.py
 python3 $S concevoir-compression --F1 20 --L1 40 --F2 60 --L2 30 --De-max 20 --materiau DH
-python3 $S compression --d 1.6 --D 12.8 --n 8 --L0 45 --F1 20 --F2 60 --fatigue [--grenaille]
+python3 $S compression --d 1.6 --D 12.8 --n 8 --L0 45 --F1 20 --F2 60 --fatigue [--grenaille] [--Rm 2150]
 python3 $S traction --d 1.5 --D 12 --n 20 --F0 10 --F 40 --L0 60
-python3 $S torsion --d 2 --D 16 --n 6 --M 800 --l1 20 --l2 20 --axe 12
+python3 $S torsion --d 2 --D 16 --n 6 --M 800 --M1 200 --l1 20 --l2 20 --axe 12   # --M1 : fatigue
 python3 $S materiaux          # ajouter --json avant la sous-commande pour une sortie machine
 ```
+`--Rm` remplace la Rm du tableau par la valeur du certificat matière.
+`--fatigue` passe le calcul en dynamique : Sa est majoré de 50 %, et la fatigue est calculée par Goodman avec les données de Zimmerli.
+Le calculateur est validé sur des exemples publiés (Axomek, Shigley) : voir `references/sources.md`.
 `concevoir-compression` balaie les diamètres de fil normalisés et les indices C de 4 à 12, puis classe les solutions (sans alerte d'abord, masse croissante).
 Repasser ensuite la solution retenue dans `compression` pour avoir tous les résultats, y compris la fatigue.
 
@@ -56,14 +64,15 @@ Leviers usuels :
 Fournir systématiquement :
 1. **Hypothèses** (matériau, extrémités, appuis, τadm) et données d'entrée.
 2. **Tableau de définition** : d, De (ou Di), n, nt, L0, Lc, sens d'enroulement, extrémités, matériau et traitements.
-3. **Points de contrôle** : F1 @ L1 et F2 @ L2 avec tolérances. Ce sont les cotes fonctionnelles du plan (EN 15800) : fixer au plus deux efforts et laisser L0 ou n « à ajuster par le fabricant ».
+3. **Points de contrôle** : F1 @ L1 et F2 @ L2 avec tolérances. Ce sont les cotes fonctionnelles du plan : fixer au plus deux efforts et laisser L0 ou n « à ajuster par le fabricant ».
 4. **Vérifications** : τ/τadm, à bloc sûr (oui/non), flambage, nf en fatigue, f propre, jeux de montage (ΔDe à bloc, Di' sous couple).
 5. **Recommandations** : guidage, traitements, alternatives (ressort catalogue proche, autre matériau).
 
 Le plan suit EN ISO 2162-1 (représentation des ressorts). Indiquer la norme de tolérance et la mention « ressort détensionné », plus « grenaillé » ou « pré-tassé » si applicable.
 
 ## Garde-fous
-- Les Rm calculées sont **indicatives**. Le dire, et recommander la validation par le fournisseur ou par des essais pour toute pièce de sécurité.
+- Les Rm sont les **minimums des tableaux EN** relevés chez des fournisseurs, et la fatigue suit Zimmerli/Shigley, pas les diagrammes EN (non publics). Le dire, et recommander la validation par le fournisseur ou par des essais pour toute pièce de sécurité.
+- Ne pas présenter comme vérifié un point listé dans « Points restant non vérifiés » de `references/sources.md`.
 - Ne pas confondre D moyen, De et Di : demander lequel l'utilisateur donne.
 - Un ressort de sécurité (frein, soupape, arrêt d'urgence) se conçoit en compression, avec un coefficient de sécurité accru, et se valide par essai.
 - Pour un audit d'un ressort existant ou d'un plan, utiliser le skill `verification-ressort`.

@@ -1,6 +1,6 @@
 ---
 name: verification-ressort
-description: Vérifie un ressort existant (plan, référence catalogue, échantillon mesuré ou définition proposée par un fournisseur) et rend un verdict conforme / à risque / non conforme sur contraintes, à bloc, flambage, fatigue, fréquence, jeux de montage et complétude de la cotation EN 15800. À utiliser pour « vérifie ce ressort », « mon ressort casse / se tasse / flambe », « ce ressort catalogue convient-il ? », revue de plan ressort, ou analyse de défaillance d'un ressort.
+description: Vérifie un ressort existant (plan, référence catalogue, échantillon mesuré ou définition proposée par un fournisseur) et rend un verdict conforme / à risque / non conforme sur contraintes, à bloc, flambage, fatigue, fréquence, jeux de montage et complétude de la cotation (EN 15800, DIN 2097, DIN 2194). À utiliser pour « vérifie ce ressort », « mon ressort casse / se tasse / flambe », « ce ressort catalogue convient-il ? », revue de plan ressort, ou analyse de défaillance d'un ressort.
 ---
 
 # Vérification et diagnostic d'un ressort
@@ -27,15 +27,18 @@ Si l'utilisateur fournit des longueurs plutôt que des efforts : F = R·(L0 − 
 | # | Critère | Conforme si |
 |---|---|---|
 | 1 | Indice C | 4 ≤ C ≤ 16 (idéal 5–12) |
-| 2 | Contrainte statique max | τ ≤ 0,5·Rm (compression) ; corps ≤ 0,45·Rm et crochets ≤ 0,75/0,40·Rm (traction) ; σ ≤ 0,7·Rm (torsion) |
-| 3 | À bloc sûr (compression) | τc ≤ τadm, ou butée qui empêche la mise à bloc |
-| 4 | Jeu mini entre spires | L2 ≥ Lc + Sa (Sa × 2 en dynamique) |
-| 5 | Flambage | flèche max < sk, ou ressort guidé |
-| 6 | Fatigue (si dynamique) | nf ≥ 1,2 (≥ 1,5 si sécurité), grenaillage spécifié si nécessaire |
-| 7 | Fréquence | f excitation < f propre / 13 |
+| 2 | Contrainte statique max | τ ≤ 0,5·Rm (compression) ; corps ≤ 0,45·Rm (traction, EN) et crochets ≤ 0,75·Rm en flexion / 0,40·Rm en torsion (Shigley) ; σq ≤ 0,7·Rm (torsion) |
+| 3 | À bloc sûr (compression) | τc ≤ 0,56·Rm, ou butée qui empêche la mise à bloc |
+| 4 | Jeu mini entre spires | L2 ≥ Lc + Sa (Sa × 1,5 en dynamique) |
+| 5 | Flambage | flèche max < sK, ou ressort guidé |
+| 6 | Fatigue (si > 10⁴ cycles) | nf ≥ 1,2 (≥ 1,5 si sécurité) ; grenaillage spécifié si fil > 1 mm |
+| 7 | Fréquence | f propre ≥ 15 à 20 × f excitation (Shigley) |
 | 8 | Jeux de montage | De + ΔDe < alésage ; Di > tige ; Di' sous couple > axe × 1,1 (torsion) |
 | 9 | Température / milieu | matériau compatible (cf. `materiaux.md`) |
-| 10 | Cotation | ≤ 2 efforts fonctionnels tolérancés, norme de tolérance, matériau normalisé, sens d'enroulement, extrémités, traitements, L0 ou n libre pour l'ajustement |
+| 10 | Cotation | ≤ 2 efforts fonctionnels tolérancés ; norme de tolérance adaptée (EN 15800 compression, DIN 2097 traction, DIN 2194 torsion) ; matériau normalisé ; sens d'enroulement ; extrémités ; traitements ; L0 ou n libre pour l'ajustement |
+
+Les valeurs et leurs sources sont détaillées dans `.claude/skills/dimensionnement-ressorts/references/` (repères [S#] vers `sources.md`).
+Si le fournisseur donne la Rm réelle du lot, la passer avec `--Rm`.
 
 ## 4. Diagnostic de défaillance (si incident)
 - **Rupture en fatigue** (faciès plat, lignes d'arrêt, amorce en fibre intérieure) : course de contrainte trop forte, absence de grenaillage, défaut de surface, corrosion, résonance (surge).
