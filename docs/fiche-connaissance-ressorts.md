@@ -13,13 +13,13 @@
 | Hélicoïdal de **compression** | Pousser, amortir, stocker de l'énergie | Simple, robuste, reste porteur même cassé | Flambage si élancé ; place à bloc | EN 13906-1 |
 | Hélicoïdal de **traction** | Tirer, rappeler | Ne flambe pas, tension initiale | Crochets fragiles en fatigue ; la rupture coupe la transmission d'effort [S2] | EN 13906-2 |
 | Hélicoïdal de **torsion** | Couple autour d'un axe (charnières, rappels) | Couple sur un axe | Frottement sur l'axe, réduction de Di | EN 13906-3 |
-| Rondelle **Belleville** | Efforts très élevés, courses faibles | Très compact, courbe réglable par empilage | Course faible, frottement | EN 16983 / DIN 2092 |
+| Rondelle **Belleville** | Efforts très élevés, courses faibles | Très compact, courbe réglable par empilage | Course faible, frottement | EN 16984 (calcul, ex-DIN 2092) / EN 16983 (dimensions, ex-DIN 2093) |
 | **Lame** / ressort plat | Contacts, clips, suspension | Formes libres | Calcul de poutre au cas par cas | – |
 | **Spiral** / à force constante | Couple sur grand angle, enrouleurs | Grande rotation | Fabrication spécifique | – |
 | Ressort **à gaz** / élastomère | Amortissement, effort quasi constant | Effort quasi constant, amortissement | Température, durée de vie des joints | Fournisseur |
 
 **Règle de choix** : privilégier la compression. Passer en traction si l'encombrement l'impose, en torsion pour un couple.
-(Belleville, lames, spiraux et ressorts à gaz sont cités pour mémoire : non couverts par les skills.)
+(Rondelles Belleville : skill `rondelles-belleville`. Lames, spiraux et ressorts à gaz sont cités pour mémoire et ne sont couverts par aucun skill.)
 
 Domaine EN 13906-1 pour l'enroulement à froid : d ≤ 20 mm, n ≥ 2, 4 ≤ w = D/d ≤ 20 [S1].
 
@@ -156,11 +156,19 @@ Le calculateur redonne les résultats des exemples publiés d'Axomek et de Shigl
 |---|---|---|
 | `dimensionnement-ressorts` | Concevoir un ressort à partir d'un cahier des charges, avec le calculateur `scripts/ressort.py` | « dimensionne un ressort », « il me faut X N à Y mm », « quelle raideur » |
 | `verification-ressort` | Auditer un ressort existant ou un plan, diagnostiquer une défaillance | « vérifie ce ressort », « mon ressort casse / se tasse », « ce ressort catalogue convient-il » |
+| `rondelles-belleville` | Calculer, choisir et vérifier des rondelles Belleville et leurs empilages (EN 16984), avec le calculateur `scripts/belleville.py` | « rondelle Belleville », « ressort à disque », « empilage de rondelles » |
 
 Emplacement : `.claude/skills/`. Claude Code charge automatiquement les skills de ce dépôt.
 Pour une utilisation sur claude.ai, zipper le dossier d'un skill et l'importer depuis la section Skills des paramètres de claude.ai.
 
 ---
+
+### Rondelles Belleville (résumé, détails dans `.claude/skills/rondelles-belleville/references/`)
+- Normes : **EN 16984** (calcul, ex-DIN 2092) et **EN 16983** (qualité, dimensions, séries A/B/C, ex-DIN 2093). Groupes : 1 (t < 1,25 mm), 2 (1,25–6 mm), 3 (> 6 mm, avec surfaces d'appui et épaisseur réduite t').
+- Effort (Almen-László) : F = 4E/(1 − µ²) · t⁴/(K1·De²) · (s/t) · [(h0/t − s/t)(h0/t − s/(2t)) + 1]. La courbe est non linéaire et sa forme dépend de h0/t.
+- Utiliser au plus 75–80 % de h0. En statique, |σOM| ≤ Rm (≈ 1600 MPa pour l'acier). En dynamique, précharger à 0,15–0,20·h0 et vérifier les points II et III sur le diagramme de fatigue du groupe.
+- Empilages : en série, les flèches s'additionnent ; en parallèle, les efforts s'additionnent, avec du frottement. Garder L0 ≤ 3·De et au plus 2 à 3 rondelles en parallèle.
+- Sources : manuel Schnorr, catalogue SPIROL, manuel Mubea. Le calculateur retrouve 61 valeurs publiées.
 
 ## 9. Sources
 

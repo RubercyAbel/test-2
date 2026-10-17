@@ -28,7 +28,8 @@ Chaque formule des références porte un repère [S#] vers `references/sources.m
 - Compression : le plus robuste, il reste porteur même cassé. Le préférer par défaut.
 - Traction : les crochets sont des points faibles en fatigue. Prévoir une butée.
 - Torsion : pour des couples sur un axe. Le charger dans le sens de l'enroulement.
-- Hors périmètre du skill : rondelles Belleville (EN 16983), lames, ressorts spiraux, ressorts à gaz, fil de section rectangulaire. Les signaler et renvoyer à la norme ou au fournisseur.
+- Rondelles Belleville : utiliser le skill `rondelles-belleville`.
+- Hors périmètre : lames, ressorts spiraux, ressorts à gaz, fil de section rectangulaire. Les signaler et renvoyer à la norme ou au fournisseur.
 
 Matériaux, Rm(d), G, E et températures limites : lire `references/materiaux.md`.
 
